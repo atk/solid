@@ -134,10 +134,12 @@ const setterTraps: ProxyHandler<StoreNode> = {
   }
 };
 
+export type DeepReadable<T> = T extends object ? { -readonly [key in keyof T]: DeepReadable<T[key]> } : T;
+
 // Immer style mutation style
-export function produce<T>(fn: (state: T) => void): (state: Store<T>) => Store<T> {
+export function produce<T>(fn: (state: DeepReadable<T>) => void): (state: Store<T>) => Store<T> {
   return state => {
-    if (isWrappable(state)) fn(new Proxy(state as object, setterTraps) as unknown as T);
+    if (isWrappable(state)) fn(new Proxy(state as object, setterTraps) as unknown as DeepReadable<T>);
     return state;
   };
 }
